@@ -1,4 +1,7 @@
 # Symptoms AI - Your friendly GP doctor
+
+**DISCLAMER: THIS IS JUST FOR EDUCATIONAL AND TESTING PURPOSES, IT HAS NO MEDICAL RELEVANCE**
+
 This simple chatbot will:
 1. Take as input symptoms
 2. Query a FAISS embedding DB trained on a symptoms dataset
