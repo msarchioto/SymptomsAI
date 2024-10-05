@@ -20,11 +20,17 @@ def query_faiss(faiss_index, embeddings_model, query, k=5):
 
 # 3. Combine user's question with the returned results from FAISS
 def combine_question_with_results(user_question, faiss_results, dataset):
-    combined_question = user_question + ". Here are related symptoms and diseases:\n"
+    combined_question = user_question + ".\nContext \nHere are related symptoms and diseases:\n"
+    previous_disease = ""
     for idx in faiss_results:
         disease = dataset.iloc[idx]['Disease']
         symptoms = dataset.iloc[idx][1:].dropna().tolist()
-        combined_question += f"Disease: {disease}, Symptoms: {', '.join(symptoms)}\n"
+        # this is just to deal with the redundancy of the dataset
+        if previous_disease == disease:
+           pass
+        else: 
+            combined_question += f"- Disease: {disease}, Symptoms: {', '.join(symptoms)}\n"
+            previous_disease = disease
     return combined_question
 
 def load_llama_model(model_name="meta-llama/Llama-3.2-3B-Instruct"):
@@ -42,18 +48,18 @@ def load_llama_model(model_name="meta-llama/Llama-3.2-3B-Instruct"):
     return llm_pipeline
 
 # 4. Function to interact with the LLaMA model
-def query_llm_llama(combined_question, llm_pipeline, max_length=250):
+def query_llm_llama(combined_question, llm_pipeline, max_length=2500):
     """
     Query the LLaMA LLM with a combined question.
     """
-    message = [
+    template = [
         {
             "role": "system",
             "content": "You are a friendly doctor who is trying to understand what disease the user have",
         },
         {"role": "user", "content": f"{combined_question}"},
     ]
-    response = llm_pipeline(combined_question, max_length=max_length, truncation=True)[0]['generated_text']
+    response = llm_pipeline(template, max_length=max_length, truncation=True)[0]['generated_text']
     return response
 
 def run_chatbot_with_llama(index_path, dataset_path,):
@@ -73,14 +79,15 @@ def run_chatbot_with_llama(index_path, dataset_path,):
 
     # 5. Combine the user's question with retrieved FAISS results
     combined_question = combine_question_with_results(user_question, faiss_results[0], dataset)
-
+    print(f"Query sent to LLM: {combined_question}")
+    
     # 6. Query the LLaMA model with the combined question
     llm_response = query_llm_llama(combined_question, llm_pipeline) 
 
     # 7. Display the response
     print("\nDoctor's Response:\n")
-    print(llm_response)
+    print(llm_response[-1]["content"])
 
 # Example usage
 if __name__ == "__main__":
-    run_chatbot_with_llama("vector_db\disease_symptoms_index.faiss", "dataset\symptoms_dataset_spaces.csv")
+    run_chatbot_with_llama("vector_db/disease_symptoms_index.faiss", "dataset/symptoms_dataset_spaces.csv")

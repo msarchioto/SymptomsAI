@@ -5,7 +5,7 @@ import numpy as np
 
 def main():
     # 1. Load the dataset
-    data = pd.read_csv('dataset\symptoms_dataset_spaces.csv')
+    data = pd.read_csv('dataset/symptoms_dataset_spaces.csv')
 
     # 2. Preprocess the dataset
     # Combine all symptom columns into one string per disease
@@ -57,7 +57,7 @@ def main():
     index_with_ids.add_with_ids(embeddings, ids)
 
     # 7. Save the FAISS index to disk
-    faiss.write_index(index_with_ids, "vector_db\disease_symptoms_index.faiss")
+    faiss.write_index(index_with_ids, "vector_db/disease_symptoms_index.faiss")
 
     print("FAISS index saved successfully.")
 
